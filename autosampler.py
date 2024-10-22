@@ -1,13 +1,24 @@
-import midi_lib
+import pygame.midi
 
-devs = midi_lib.get_output_midi_devices()
+import midi_lib
+import audio_lib
+import threading
+
+devs = midi_lib.get_devices_info()
 print( devs )
 
-DEVICE = 'UM-ONE'
-port = midi_lib.get_midi_out_dev_id_by_name( DEVICE )
+MIDI_OUT_ID = 3
 
-while True:
-    for note in range(0,128,3):
-        midi_lib.play_note(DEVICE, note, 127, 0.1)
-    for note in range(127,-1, -3):
-        midi_lib.play_note(DEVICE, note, 127, 0.1)
+for note in range(0,128,4):
+
+    # Démarre thread sampling
+    ansi_note = pygame.midi.midi_to_ansi_note(note)
+    thread_sampling = threading.Thread( target=lambda: audio_lib.sample(1, f'sample-{ansi_note}.wav') )
+    thread_sampling.start()
+
+    # Joue note en midi
+    midi_lib.play_note(MIDI_OUT_ID, note, 127, 0.5)
+
+    # Attend fin thread sampling
+    thread_sampling.join()
+

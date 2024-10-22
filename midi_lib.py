@@ -1,9 +1,7 @@
 import pygame.midi
 import time
 
-def play_note(output_device_name, note, velocity, duration):
-
-    midi_device_id = get_midi_out_dev_id_by_name(output_device_name)
+def play_note(midi_device_id, note, velocity, duration):
 
     pygame.init()
     pygame.midi.init()
@@ -14,26 +12,24 @@ def play_note(output_device_name, note, velocity, duration):
     output.close()
     pygame.midi.quit()
 
-def get_midi_out_dev_id_by_name(midi_device_name):
-    names = get_output_midi_devices()
-    for i in range(len(names)):
-        if names[i]==midi_device_name:
-            return i+1
-    raise Exception('MIDI device not found : ' + midi_device_name)
-
-def get_output_midi_devices():
+def get_devices_info():
     # Initialiser pygame et pygame.midi
     pygame.init()
     pygame.midi.init()
 
     # Lister les périphériques MIDI disponibles
-    output_device_names = []
+    devices_infos = []
     for i in range(pygame.midi.get_count()):
         interf, name, input, output, opened = pygame.midi.get_device_info(i)
-        if output:
-            output_device_names.append( name.decode() )
+        devices_infos.append( {   "id": i,
+                                        "interface": interf,
+                                        "name": name,
+                                        "input": input,
+                                        "output": output,
+                                        "opened": opened
+                                        })
 
     # Quitter pygame midi
     pygame.midi.quit()
 
-    return output_device_names
+    return devices_infos
